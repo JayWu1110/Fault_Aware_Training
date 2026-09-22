@@ -18,7 +18,7 @@ Evaluated on the **MNIST dataset**, the FAT framework consistently outperforms n
 * Higher classification accuracy in **both** fault-free and faulty hardware scenarios.
 * An average accuracy improvement of **~2.0%** specifically under faulty conditions, proving the effectiveness of the targeted weight recovery and fault simulation.
 
-* # Environmental Setup
+## Environmental Setup
 Download the tool for constructing virtual environment
 ```bash
 sudo apt install python3-venv
