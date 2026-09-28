@@ -75,3 +75,65 @@ def plot_table1(csv_path, out_dir) -> Path:
     out = Path(out_dir) / "table1.png"
     fig.savefig(out, dpi=120); plt.close(fig)
     return out
+
+
+def plot_ablations(csv_path, out_dir) -> Path:
+    """Heatmap: training recipe (rows) vs test fault model (columns)."""
+    df = pd.read_csv(csv_path)
+    rows = ["normal", "hts", "hts_norecovery", "hts_noresample", "sat", "swf"]
+    cols = [("test_hts", "hts"), ("test_sat", "sat"), ("test_swf", "swf")]
+    labels = {
+        "normal": "normal BP",
+        "hts": "FAT (hts)",
+        "hts_norecovery": "hts, no recovery",
+        "hts_noresample": "hts, no resample",
+        "sat": "FAT (sat)",
+        "swf": "FAT (swf)",
+    }
+    present = [r for r in rows if r in set(df.train)]
+    mat = []
+    for r in present:
+        g = df[df.train == r]
+        mat.append([100 * g[c].mean() for c, _ in cols])
+    fig, ax = plt.subplots(figsize=(5.2, 3.4))
+    im = ax.imshow(mat, cmap="RdYlGn", vmin=25, vmax=100, aspect="auto")
+    ax.set_xticks(range(len(cols)), [n for _, n in cols])
+    ax.set_yticks(range(len(present)), [labels.get(r, r) for r in present])
+    ax.set_xlabel("test fault model")
+    ax.set_title("cross-fault test accuracy (%)")
+    for i, row in enumerate(mat):
+        for j, v in enumerate(row):
+            ax.text(j, i, f"{v:.1f}", ha="center", va="center",
+                    color="white" if v < 55 else "black", fontsize=8)
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    fig.tight_layout()
+    out = Path(out_dir) / "ablations.png"
+    fig.savefig(out, dpi=160)
+    plt.close(fig)
+    return out
+
+
+def plot_psweep_compare(normal_csv, fat_csv, out_dir) -> Path:
+    """Accuracy vs p for normal BP and FAT, one panel per fault model."""
+    nd = pd.read_csv(normal_csv)
+    fd = pd.read_csv(fat_csv)
+    fms = [fm for fm in ("hts", "sat", "swf") if fm in set(nd.fault_model) | set(fd.fault_model)]
+    fig, axes = plt.subplots(1, len(fms), figsize=(3.1 * len(fms), 3.2), sharey=True)
+    if len(fms) == 1:
+        axes = [axes]
+    for ax, fm in zip(axes, fms):
+        for df, name, style in ((nd, "normal BP", "o-"), (fd, "FAT", "s-")):
+            g = df[df.fault_model == fm].groupby("prob").acc.agg(["mean", "std"])
+            ax.errorbar(g.index, g["mean"] * 100, yerr=g["std"] * 100,
+                        fmt=style, capsize=3, label=name)
+        ax.set_xlabel("fault probability $p$")
+        ax.set_title(fm)
+        ax.set_ylim(0, 100)
+        ax.grid(True, alpha=0.3)
+    axes[0].set_ylabel("test accuracy (%)")
+    axes[-1].legend(fontsize=8)
+    fig.tight_layout()
+    out = Path(out_dir) / "acc_vs_p.png"
+    fig.savefig(out, dpi=160)
+    plt.close(fig)
+    return out

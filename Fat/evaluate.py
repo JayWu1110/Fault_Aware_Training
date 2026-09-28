@@ -123,17 +123,22 @@ def main(argv=None):
     a = parse_args(argv)
     if not a.run and not a.ckpt:
         raise SystemExit("evaluate.py: provide --run DIR and/or --ckpt PATH")
-    run_dir = Path(a.run) if a.run else Path(a.out_dir or "outputs/eval")
-    run_dir.mkdir(parents=True, exist_ok=True)
     model, cfg = load_run(Path(a.run) if a.run else None, a.ckpt, a.device, a.ckpt_kind)
+    if a.out_dir:
+        out_dir = Path(a.out_dir)
+    elif a.run:
+        out_dir = Path(a.run)
+    else:
+        out_dir = Path("outputs/eval")
+    out_dir.mkdir(parents=True, exist_ok=True)
     maybe_extract_data_zip(cfg.data_root)
     _, _, test_loader = get_dataloaders(
         cfg.data_root, cfg.batch_size, cfg.valid_ratio, cfg.seed, dataset=cfg.dataset)
 
     rows = run_eval(model, cfg, test_loader, a.probs, a.fault_models, a.repeats, a.seed)
     summary = summarise(rows)
-    write_csv(rows, run_dir / "eval.csv")
-    write_csv(summary, run_dir / "eval_summary.csv")
+    write_csv(rows, out_dir / "eval.csv")
+    write_csv(summary, out_dir / "eval_summary.csv")
 
     print(f"{'fault':<6}{'p':>6}{'n':>4}{'mean%':>9}{'std%':>7}{'min%':>8}{'max%':>8}")
     for s in summary:
@@ -142,9 +147,10 @@ def main(argv=None):
 
     if not a.no_plots:
         import plot
-        plot.plot_eval(run_dir / "eval.csv", run_dir)
-        if (run_dir / "history.csv").exists():
-            plot.plot_history(run_dir / "history.csv", run_dir)
+        plot.plot_eval(out_dir / "eval.csv", out_dir)
+        hist = (Path(a.run) / "history.csv") if a.run else (out_dir / "history.csv")
+        if hist.exists():
+            plot.plot_history(hist, out_dir)
     return summary
 
 
