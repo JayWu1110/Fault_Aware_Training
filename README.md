@@ -27,12 +27,8 @@ Method inspired by Zahid et al., *FAT: Training Neural Networks for Reliable Inf
 - [Default hyperparameters](#default-hyperparameters)
 - [Outputs](#outputs)
 - [Tests](#tests)
-- [FAQ](#faq)
 - [Limitations](#limitations)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
-- [Citation](#citation)
-- [Authors](#authors)
 - [Acknowledgments](#acknowledgments)
 - [License](#license)
 
@@ -286,20 +282,6 @@ pytest -q
 
 Checks include: checkpoint key match, fault-list rate near \(p\), hts zeros / sat ones, output layer excluded by default, recovery restores rows.
 
-## FAQ
-
-**Do I need a GPU?**  
-No. CUDA is used when present. Table I on a laptop GPU (e.g. RTX 4060) is hours, not minutes; CPU is much slower.
-
-**Why is the class layer not faulted?**  
-At \(p=0.25\) a ten-way readout would lose two or three digits at random and dominate the error. Pass `--include-output-faults` if you want that protocol.
-
-**Can I cite `docs/results/`?**  
-No. That folder holds early / mixed-protocol runs. Cite `outputs/paper/table1/` after you reproduce, or the tables in [`report/report.pdf`](report/report.pdf).
-
-**`git push` says fetch first.**  
-The GitHub `README` was edited on the website after the first push, so histories diverged. Pull with rebase, or overwrite only if you intend to drop those remote commits.
-
 ## Limitations
 
 - Faults are drawn independently per hidden neuron; real silicon defects are spatially correlated.
@@ -307,14 +289,6 @@ The GitHub `README` was edited on the website after the first push, so histories
 - TMR is a software majority vote, not chip-level lockstep.
 - Convolutional SNN (`--arch conv`) is implemented but not in the report tables.
 - We do not reimplement ReSpawn / hardware mappers; FAT is a training-loop change and is complementary to those.
-
-## Roadmap
-
-- [x] Shared rate-coded train/test path and real forward-pass injection
-- [x] Table I, ablations, Fashion-MNIST, TMR, *p*-sweep
-- [ ] Report convolutional SNN / N-MNIST numbers
-- [ ] Measure on a neuromorphic chip
-- [ ] Spatially correlated fault maps
 
 ## Contributing
 
@@ -326,38 +300,6 @@ Issues and pull requests are welcome.
 4. Open a pull request against `master`
 
 Please do not commit `Fat/outputs/`, `Fat/data/`, or venv files (already in `.gitignore`).
-
-## Citation
-
-If you use this code, please cite the report:
-
-```bibtex
-@techreport{wu2026fat,
-  title  = {Fault Aware Training For Spiking Neural Networks},
-  author = {Wu, Pin-Yu and Wang, Yu-Shiang},
-  year   = {2026},
-  institution = {National Taiwan University},
-  url    = {https://github.com/JayWu1110/Fault_Aware_Training}
-}
-```
-
-Related work this implementation follows:
-
-```bibtex
-@inproceedings{zahid2020fat,
-  title     = {{FAT}: Training Neural Networks for Reliable Inference Under Hardware Faults},
-  author    = {Zahid, Ussama and Gambardella, Giulio and Fraser, Nicholas J. and Blott, Michaela and Vissers, Kees},
-  booktitle = {Proc. IEEE ITC},
-  year      = {2020}
-}
-```
-
-## Authors
-
-- **Pin-Yu Wu** — [b11502041@ntu.edu.tw](mailto:b11502041@ntu.edu.tw)
-- **Yu-Shiang Wang** — [b11504024@ntu.edu.tw](mailto:b11504024@ntu.edu.tw)
-
-National Taiwan University, Taipei, Taiwan.
 
 ## Acknowledgments
 
